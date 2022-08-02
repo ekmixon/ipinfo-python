@@ -70,9 +70,7 @@ class Handler:
         # If the supplied IP address uses the objects defined in the built-in
         # module ipaddress extract the appropriate string notation before
         # formatting the URL.
-        if isinstance(ip_address, IPv4Address) or isinstance(
-            ip_address, IPv6Address
-        ):
+        if isinstance(ip_address, (IPv4Address, IPv6Address)):
             ip_address = ip_address.exploded
 
         # check cache first.
@@ -90,7 +88,7 @@ class Handler:
         # not in cache; do http req
         url = API_URL
         if ip_address:
-            url += "/" + ip_address
+            url += f"/{ip_address}"
         headers = handler_utils.get_headers(self.access_token)
         response = requests.get(url, headers=headers, **req_opts)
         if response.status_code == 429:
@@ -141,7 +139,7 @@ class Handler:
         quota errors.
         Defaults to on.
         """
-        if batch_size == None:
+        if batch_size is None:
             batch_size = BATCH_MAX_SIZE
 
         result = {}
@@ -153,9 +151,7 @@ class Handler:
             # if the supplied IP address uses the objects defined in the
             # built-in module ipaddress extract the appropriate string notation
             # before formatting the URL.
-            if isinstance(ip_address, IPv4Address) or isinstance(
-                ip_address, IPv6Address
-            ):
+            if isinstance(ip_address, (IPv4Address, IPv6Address)):
                 ip_address = ip_address.exploded
 
             try:
@@ -165,7 +161,7 @@ class Handler:
                 lookup_addresses.append(ip_address)
 
         # all in cache - return early.
-        if len(lookup_addresses) == 0:
+        if not lookup_addresses:
             return result
 
         # do start timer if necessary
@@ -176,7 +172,7 @@ class Handler:
         req_opts = {**self.request_options, "timeout": timeout_per_batch}
 
         # loop over batch chunks and do lookup for each.
-        url = API_URL + "/batch"
+        url = f"{API_URL}/batch"
         headers = handler_utils.get_headers(self.access_token)
         headers["content-type"] = "application/json"
         for i in range(0, len(lookup_addresses), batch_size):
@@ -210,7 +206,7 @@ class Handler:
                 self.cache[cache_key(ip_address)] = details
 
             # merge cached results with new lookup
-            result.update(json_response)
+            result |= json_response
 
             # format all
             for detail in result.values():
@@ -229,7 +225,7 @@ class Handler:
             # if the supplied IP address uses the objects defined in the
             # built-in module ipaddress extract the appropriate string notation
             # before formatting the URL.
-            if isinstance(ip, IPv4Address) or isinstance(ip, IPv6Address):
+            if isinstance(ip, (IPv4Address, IPv6Address)):
                 ip = ip.exploded
 
             ip_strs.append(ip)

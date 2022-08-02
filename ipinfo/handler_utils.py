@@ -45,7 +45,7 @@ def get_headers(access_token):
     }
 
     if access_token:
-        headers["authorization"] = "Bearer {}".format(access_token)
+        headers["authorization"] = f"Bearer {access_token}"
 
     return headers
 

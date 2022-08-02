@@ -95,9 +95,7 @@ class AsyncHandler:
         # If the supplied IP address uses the objects defined in the built-in
         # module ipaddress, extract the appropriate string notation before
         # formatting the URL.
-        if isinstance(ip_address, IPv4Address) or isinstance(
-            ip_address, IPv6Address
-        ):
+        if isinstance(ip_address, (IPv4Address, IPv6Address)):
             ip_address = ip_address.exploded
 
         # check cache first.
@@ -110,7 +108,7 @@ class AsyncHandler:
         # not in cache; do http req
         url = API_URL
         if ip_address:
-            url += "/" + ip_address
+            url += f"/{ip_address}"
         headers = handler_utils.get_headers(self.access_token)
         req_opts = {}
         if timeout is not None:
@@ -169,7 +167,7 @@ class AsyncHandler:
         """
         self._ensure_aiohttp_ready()
 
-        if batch_size == None:
+        if batch_size is None:
             batch_size = BATCH_MAX_SIZE
 
         result = {}
@@ -181,9 +179,7 @@ class AsyncHandler:
             # If the supplied IP address uses the objects defined in the
             # built-in module ipaddress extract the appropriate string notation
             # before formatting the URL.
-            if isinstance(ip_address, IPv4Address) or isinstance(
-                ip_address, IPv6Address
-            ):
+            if isinstance(ip_address, (IPv4Address, IPv6Address)):
                 ip_address = ip_address.exploded
 
             try:
@@ -193,7 +189,7 @@ class AsyncHandler:
                 lookup_addresses.append(ip_address)
 
         # all in cache - return early.
-        if len(lookup_addresses) == 0:
+        if not lookup_addresses:
             return result
 
         # do start timer if necessary
@@ -201,7 +197,7 @@ class AsyncHandler:
             start_time = time.time()
 
         # loop over batch chunks and prepare coroutines for each.
-        url = API_URL + "/batch"
+        url = f"{API_URL}/batch"
         headers = handler_utils.get_headers(self.access_token)
         headers["content-type"] = "application/json"
 
